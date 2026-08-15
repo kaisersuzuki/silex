@@ -12,3 +12,4 @@ asic/runs/
 asic/gen/
 asic/flow.log
 .venv-openlane/
+__pycache__/
