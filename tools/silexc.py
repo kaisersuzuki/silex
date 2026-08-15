@@ -12,9 +12,10 @@ The RTL in rtl/ is model-agnostic; this header specializes it.
 """
 import numpy as np
 import os
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BUILD = os.path.join(ROOT, "build")
+BUILD = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "build")
 
 q = np.load(os.path.join(BUILD, "model.npz"))
 nin, h = q["w1"].shape

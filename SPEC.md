@@ -106,6 +106,33 @@ Verification chain, every link bit-exact: float model → frozen integer model
 → RTL simulation (1000/1000) → synthesized iCE40 netlist (gate-level sim,
 20/20 + BIST) → bitstream.
 
+## 4c. Sky130 ASIC implementation (OpenLane 2, signoff-clean GDSII)
+
+Full-size SILEX-1D failed detailed routing on sky130: 9.4 KB of weight ROM
+synthesized to mux logic exceeds what five metal layers can route (three
+runs: congestion at global route twice, then a 60k→1.4k violation stall in
+detailed route). The industry-standard fix is a ROM macro (OpenRAM/DFFRAM);
+adopting one is future work. To close the flow end to end, **SILEX-1S** was
+frozen: same architecture, BIST, and arithmetic, sized 49→24→10 (1.4 KB ROM;
+7×7 avg-pooled MNIST, 94.2% int8 accuracy, 1000/1000 bit-exact RTL, boots in
+1,568 cycles).
+
+| SILEX-1S signoff metric (sky130 HD, 50 MHz target) | Value |
+|---|---|
+| Magic DRC / KLayout DRC | **0 / 0** |
+| LVS (netgen) | **0 errors, fully matched** |
+| Routing DRC convergence | 5,916 → 0 in 7 iterations |
+| Setup / hold worst slack | +7.05 ns / +0.107 ns (fmax ≈ 77 MHz) |
+| Die area / std cells | 0.394 mm² / 14,981 |
+| Estimated power | ≈ 4.6 mW |
+| Antenna violations | 26 nets (100 diodes auto-inserted; MPW-acceptable) |
+| Output | `asic/silex_1s_sky130.gds` |
+
+Flow: `make asic-small` (OpenLane 2.3.10, Docker backend, config in
+`asic/config.json` — 20% core utilization, 25% placement density,
+GRT_ADJUSTMENT 0.05, AREA 3 synthesis; settings chosen during the SILEX-1D
+congestion fight and kept).
+
 ## 5. Resource estimate (synthesis-ready structure)
 
 - Weight ROM: 196·48 + 48·10 = 9,888 bytes; bias ROM 232 bytes.

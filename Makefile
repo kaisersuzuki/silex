@@ -1,7 +1,7 @@
 RTL     = rtl/silex_layer.v rtl/silex_argmax.v rtl/silex_bist.v rtl/silex_top.v
 RTL_CNN = rtl/silex_layer.v rtl/silex_conv.v rtl/silex_argmax.v rtl/silex_bist.v rtl/silex_top_cnn.v
 
-.PHONY: all train train-cnn compile sim verify sim-cnn verify-cnn synth fpga gatesim asic clean
+.PHONY: all train train-cnn compile sim verify sim-cnn verify-cnn synth fpga gatesim asic asic-small clean
 
 all: verify verify-cnn
 
@@ -65,6 +65,30 @@ asic: build/silex_params.vh
 	   build/silex_params.vh asic/gen/
 	head -200 build/w1.hex > asic/gen/w.hex
 	head -48  build/b1.hex > asic/gen/b.hex
+	for f in silex_layer silex_argmax silex_bist silex_top; do \
+	  sed -e 's|"w1.hex"|"$(CURDIR)/asic/gen/w1.hex"|' \
+	      -e 's|"b1.hex"|"$(CURDIR)/asic/gen/b1.hex"|' \
+	      -e 's|"w2.hex"|"$(CURDIR)/asic/gen/w2.hex"|' \
+	      -e 's|"b2.hex"|"$(CURDIR)/asic/gen/b2.hex"|' \
+	      -e 's|"golden.hex"|"$(CURDIR)/asic/gen/golden.hex"|' \
+	      -e 's|"w.hex"|"$(CURDIR)/asic/gen/w.hex"|' \
+	      -e 's|"b.hex"|"$(CURDIR)/asic/gen/b.hex"|' \
+	      rtl/$$f.v > asic/gen/$$f.v; \
+	done
+	./.venv-openlane/bin/openlane --dockerized asic/config.json
+
+# Sky130 test-chip instance (SILEX-1S, 49->24->10): small enough for its
+# weight ROM to route as synthesized logic. Full-size SILEX-1D needs a real
+# ROM macro (OpenRAM/DFFRAM) — 9.4 KB of ROM-as-muxes does not route on
+# sky130's five metal layers.
+asic-small:
+	python3 tools/train_small.py
+	python3 tools/silexc.py build/small
+	mkdir -p asic/gen
+	cp build/small/w1.hex build/small/b1.hex build/small/w2.hex \
+	   build/small/b2.hex build/small/golden.hex build/small/silex_params.vh asic/gen/
+	head -49 build/small/w1.hex > asic/gen/w.hex
+	head -24 build/small/b1.hex > asic/gen/b.hex
 	for f in silex_layer silex_argmax silex_bist silex_top; do \
 	  sed -e 's|"w1.hex"|"$(CURDIR)/asic/gen/w1.hex"|' \
 	      -e 's|"b1.hex"|"$(CURDIR)/asic/gen/b1.hex"|' \
