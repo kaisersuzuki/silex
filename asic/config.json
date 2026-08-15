@@ -1,0 +1,14 @@
+{
+    "DESIGN_NAME": "silex_top",
+    "VERILOG_FILES": [
+        "dir::gen/silex_layer.v",
+        "dir::gen/silex_argmax.v",
+        "dir::gen/silex_bist.v",
+        "dir::gen/silex_top.v"
+    ],
+    "VERILOG_INCLUDE_DIRS": ["dir::gen"],
+    "CLOCK_PORT": "clk",
+    "CLOCK_PERIOD": 20.0,
+    "FP_SIZING": "relative",
+    "PL_TARGET_DENSITY_PCT": 55
+}

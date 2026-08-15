@@ -65,7 +65,9 @@ module silex_layer #(
     reg               mac_v;   // registered operands are valid
     reg               drain;   // last chunk fetched; one accumulate left
     reg signed [31:0] psum;
-    integer k;
+    integer k;   // comb psum loop only
+    integer j;   // clocked fetch loop only (separate variable: sharing one
+                 // across two processes creates a multi-driven net in synthesis)
     always @* begin
         psum = 32'sd0;
         for (k = 0; k < P; k = k + 1)
@@ -106,15 +108,15 @@ module silex_layer #(
                         icnt  <= 0;
                         state <= S_ACT;
                     end else begin
-                        for (k = 0; k < P; k = k + 1)
-                            if (k == 0) begin
+                        for (j = 0; j < P; j = j + 1)
+                            if (j == 0) begin
                                 xr[0] <= ibuf[icnt[AW_IN-1:0]];
                                 wr[0] <= wrom[wbase[AW_ROM-1:0] + icnt[AW_IN-1:0]];
                             end else begin
-                                xr[k] <= (icnt + k < NIN)
-                                         ? ibuf[icnt[AW_IN-1:0] + k] : 8'd0;
-                                wr[k] <= (icnt + k < NIN)
-                                         ? wrom[wbase[AW_ROM-1:0] + icnt[AW_IN-1:0] + k]
+                                xr[j] <= (icnt + j < NIN)
+                                         ? ibuf[icnt[AW_IN-1:0] + j] : 8'd0;
+                                wr[j] <= (icnt + j < NIN)
+                                         ? wrom[wbase[AW_ROM-1:0] + icnt[AW_IN-1:0] + j]
                                          : 8'd0;
                             end
                         mac_v <= 1'b1;
