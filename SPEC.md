@@ -143,6 +143,12 @@ congestion fight and kept).
 
 ## 6. Scaling path — status
 
+**Future work (tracked in [issue #1](https://github.com/kaisersuzuki/silex/issues/1)):**
+replace SILEX-1D's synthesized weight ROM with a hard memory macro
+(OpenRAM ROM / DFFRAM / sky130 SRAM + boot-copy) so the full-size chip
+routes on sky130. The layer engine's synchronous one-cycle read port already
+matches a macro interface, so no control-path change is expected.
+
 1. **Conv layers** — DONE: `silex_conv` (sliding-window FSM over a frame
    buffer, HWC output order), used by SILEX-1C. Line buffer is the drop-in
    replacement for frames too large to buffer whole.
